@@ -35,6 +35,8 @@ connection.query('SELECT item_id, product_name FROM products', (err,res)=>{
 });
 
 function selectProduct(products){
+
+	//interview for user to select among a list of products
 	inquirer.prompt([
 		{
 			type: 'list',
@@ -50,19 +52,45 @@ function selectProduct(products){
 function selectQuantity(productSelection){
 	let productID = productSelection.split(') ')[0];
 	let quantity = undefined;
+	let price = undefined;
 
-	connection.query('SELECT quantity FROM products WHERE ?',{item_id: productID}, (err,res) =>{
+	//based on users product selection, grab the quantity availabe and current price
+	connection.query('SELECT quantity, price FROM products WHERE ?',{item_id: productID}, (err,res) =>{
 		if (err) throw err;
-		console.log(res[0].quantity);
+		quantity = res[0].quantity;
+		price = res[0].price;
 
+		//interview user for how much they want to buy
 		inquirer.prompt([
 			{
 				type: 'input',
-				message 'Select quantity (inventory - ' + res[0].quantity + '):',
-				name: quantitySelection
+				message: 'Select quantity (inventory: ' + quantity + '):',
+				name: 'quantitySelection'
 			}
 		]).then(function(input){
-			
+
+			//if inventory is lower than user's desired amount, let them know and close out
+			if(typeof quantity !== 'number' || input.quantitySelection > quantity ){
+				console.log( chalk.red('Insufficient quantity!'));
+				connection.end();
+				return;
+			}else{
+
+				// else subtract the selected product's inventory
+				connection.query('UPDATE products SET quantity=(quantity - ? ) WHERE item_id=?;',[input.quantitySelection, productID], (err)=>{
+					if (err) throw err;
+					console.log(chalk.yellow('Inventory deduced by: ') + input.quantitySelection);
+
+					console.log( chalk.yellow('Total Charge: ') + '$' + (input.quantitySelection * price).toFixed(2) );
+					connection.end();
+				});
+			}
 		});
 	});
 }
+
+
+
+
+
+
