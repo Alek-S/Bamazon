@@ -79,7 +79,7 @@ function selectQuantity(productSelection){
 				// else subtract the selected product's inventory
 				connection.query('UPDATE products SET quantity=(quantity - ? ) WHERE item_id=?;',[input.quantitySelection, productID], (err)=>{
 					if (err) throw err;
-					console.log(chalk.yellow('Inventory deduced by: ') + input.quantitySelection);
+					console.log(chalk.yellow('Inventory reduced by: ') + input.quantitySelection);
 
 					console.log( chalk.yellow('Total Charge: ') + '$' + (input.quantitySelection * price).toFixed(2) );
 					connection.end();
