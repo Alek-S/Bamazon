@@ -80,8 +80,8 @@ function viewProducts(){
 
 
 function viewLowInventory(){
-	//where 15 or less in inventory
-	connection.query('SELECT * FROM products WHERE quantity <= 15', (err,res)=>{
+	//where less than 5 in invntory
+	connection.query('SELECT * FROM products WHERE quantity < 5', (err,res)=>{
 		if(err) throw err;
 		
 		//cli table
