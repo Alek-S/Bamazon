@@ -68,7 +68,7 @@ function viewProducts(){
 			colWidths: [5, 30, 10,10]
 		});	
 
-		for (var i = 0; i < res.length; i++) {
+		for (let i = 0; i < res.length; i++) {
 			productTable.push([res[i].item_id, res[i].product_name, '$'+res[i].price, res[i].quantity]);
 		}
 
@@ -80,7 +80,24 @@ function viewProducts(){
 
 
 function viewLowInventory(){
+	//where 15 or less in inventory
+	connection.query('SELECT * FROM products WHERE quantity <= 15', (err,res)=>{
+		if(err) throw err;
+		
+		//cli table
+		let productTable = new Table({
+			head: ['ID', 'Name', 'Price', 'Quantity' ],
+			colWidths: [5, 30, 10,10]
+		});	
 
+		for (let i = 0; i < res.length; i++) {
+			productTable.push([res[i].item_id, res[i].product_name, '$'+res[i].price, res[i].quantity]);
+		}
+
+		//show table and close connection
+		console.log(productTable.toString());
+		connection.end();
+	});
 }
 
 
