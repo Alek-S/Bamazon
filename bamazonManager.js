@@ -1,9 +1,14 @@
 'use strict';
 
 //==MODULES==
+
+//NPM
 const mysql = require('mysql');
 const inquirer = require('inquirer');
-const chalk = require('chalk');
+const chalk = require('chalk'); //cli text color
+const Table = require('cli-table'); //cli table library
+
+//local
 const config = require('./config.js'); //database config file  --in .gitignore
 
 //==DB Connection==
@@ -14,8 +19,6 @@ connection.connect( (err) => {
 	if (err) throw err;
 	console.log(chalk.grey('connected to database as ID: ' + connection.threadId));
 });
-
-
 
 
 //interview - user to select action
@@ -32,14 +35,13 @@ inquirer.prompt([
 		name: 'selected'
 	}
 ]).then( (choice)=>{
-	console.log(choice.selected);
 	switch(choice.selected){
 		case 'View Products for Sale':
 			viewProducts();
 			break;
 
 		case 'View Low Inventory':
-			viewLowInventory()
+			viewLowInventory();
 			break;
 
 		case 'Add to Inventory':
@@ -56,8 +58,24 @@ inquirer.prompt([
 
 //===FUNCTIONS==
 function viewProducts(){
-	console.log('viewProducts');
-	connection.end();
+
+	connection.query('SELECT * FROM products', (err,res)=>{
+		if(err) throw err;
+		
+		//cli table
+		let productTable = new Table({
+			head: ['ID', 'Name', 'Price', 'Quantity' ],
+			colWidths: [5, 30, 10,10]
+		});	
+
+		for (var i = 0; i < res.length; i++) {
+			productTable.push([res[i].item_id, res[i].product_name, '$'+res[i].price, res[i].quantity]);
+		}
+
+		//show table and close connection
+		console.log(productTable.toString());
+		connection.end();
+	});
 }
 
 
