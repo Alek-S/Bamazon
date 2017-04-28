@@ -18,42 +18,45 @@ const connection = mysql.createConnection(config);
 connection.connect( (err) => {
 	if (err) throw err;
 	console.log(chalk.grey('connected to database as ID: ' + connection.threadId));
+	startInterview();
 });
 
 
 //interview - user to select action
-inquirer.prompt([
-	{
-		type: 'list',
-		message: 'Select Action:',
-		choices: [
-			'View Products for Sale', 
-			'View Low Inventory',
-			'Add to Inventory',
-			'Add to Product',
-		],
-		name: 'selected'
-	}
-]).then( (choice)=>{
-	switch(choice.selected){
-		case 'View Products for Sale':
-			viewProducts();
-			break;
+function startInterview(){
+	inquirer.prompt([
+		{
+			type: 'list',
+			message: 'Select Action:',
+			choices: [
+				'View Products for Sale', 
+				'View Low Inventory',
+				'Add to Inventory',
+				'Add to Product',
+			],
+			name: 'selected'
+		}
+	]).then( (choice)=>{
 
-		case 'View Low Inventory':
-			viewLowInventory();
-			break;
+		switch(choice.selected){
+			case 'View Products for Sale':
+				viewProducts();
+				break;
 
-		case 'Add to Inventory':
-			addToInventory();
-			break;
+			case 'View Low Inventory':
+				viewLowInventory();
+				break;
 
-		case 'Add to Product':
-			addToProduct();
-			break;
-	}
-});
+			case 'Add to Inventory':
+				addToInventory();
+				break;
 
+			case 'Add to Product':
+				addToProduct();
+				break;
+		}
+	});
+}
 
 
 //===FUNCTIONS==
@@ -102,6 +105,42 @@ function viewLowInventory(){
 
 
 function addToInventory(){
+	let products = [];
+
+	connection.query('SELECT product_name, quantity FROM products', (err,res)=>{
+		for (let i = 0; i < res.length; i++) {
+			products.push(res[i].product_name);
+		}
+
+		inquirer.prompt([
+			{
+				type: 'list',
+				message: 'Select product to add inventory to:',
+				choices: products,
+				name: 'addTo'
+			},
+			{
+				type: 'input',
+				message: 'Select quantity to add:',
+				name: 'quantityToAdd'
+			}
+		]).then( (product)=>{
+
+			if( !isNaN(product.quantityToAdd) ){
+				//add that amount to the product's inventory
+				connection.query('UPDATE products SET quantity=(quantity + ? ) WHERE product_name=?',[ parseInt(product.quantityToAdd), product.addTo], (err)=>{
+					if (err) throw err;
+
+					console.log(chalk.yellow('Added to inventory:'),product.quantityToAdd, 'to', product.addTo);
+					connection.end();
+				});
+			} else{
+				console.log( chalk.red('Error: Did not submit a valid number'));
+				connection.end();
+			}
+		});
+			
+	});
 
 }
 
