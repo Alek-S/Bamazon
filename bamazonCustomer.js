@@ -4,16 +4,10 @@
 const mysql = require('mysql');
 const inquirer = require('inquirer');
 const chalk = require('chalk');
-
+const config = require('./config.js'); //database config file  --in .gitignore
 
 //==DB Connection==
-const connection = mysql.createConnection({
-	host: 'localhost',
-	port: 3306,
-	user: 'root',
-	password: '',
-	database: 'Bamazon'
-});
+const connection = mysql.createConnection(config);
 
 //connect to db
 connection.connect( (err) => {
@@ -36,7 +30,7 @@ connection.query('SELECT item_id, product_name FROM products', (err,res)=>{
 
 function selectProduct(products){
 
-	//interview for user to select among a list of products
+	//interview - user to select among a list of products
 	inquirer.prompt([
 		{
 			type: 'list',
@@ -60,7 +54,7 @@ function selectQuantity(productSelection){
 		quantity = res[0].quantity;
 		price = res[0].price;
 
-		//interview user for how much they want to buy
+		//interview - how much user wants to buy
 		inquirer.prompt([
 			{
 				type: 'input',
@@ -69,9 +63,9 @@ function selectQuantity(productSelection){
 			}
 		]).then(function(input){
 
-			//if inventory is lower than user's desired amount, let them know and close out
-			if(typeof quantity !== 'number' || input.quantitySelection > quantity ){
-				console.log( chalk.red('Insufficient quantity!'));
+			//if inventory is lower than user's desired amount, or not a numeric value, give error and close out
+			if(typeof input.quantitySelection !== 'number' || input.quantitySelection > quantity ){
+				console.log( chalk.red('Error: Not a number or insufficient quantity!'));
 				connection.end();
 				return;
 			}else{
@@ -88,9 +82,3 @@ function selectQuantity(productSelection){
 		});
 	});
 }
-
-
-
-
-
-
