@@ -39,6 +39,7 @@ function startInterview(){
 	]).then( (choice)=>{
 
 		switch(choice.selected){
+
 			case 'View Products for Sale':
 				viewProducts();
 				break;
@@ -54,6 +55,7 @@ function startInterview(){
 			case 'Add to Product':
 				addToProduct();
 				break;
+
 		}
 	});
 }
@@ -147,6 +149,53 @@ function addToInventory(){
 
 function addToProduct(){
 
+	inquirer.prompt([
+		{
+			type: 'input',
+			message: 'New Product Name:',
+			name: 'newProduct'
+		},
+		{
+			type: 'input',
+			message: 'Product Department:',
+			name: 'department'
+		},
+		{
+			type: 'input',
+			message: 'Quantity:',
+			name: 'newProductQuantity',
+			validate: function (value) {
+				let pass = value.match(/\b\d*\b/); //checks if digit 
+				if (pass) {
+					return true;
+				}
+				return 'Please enter a valid number';
+			}
+
+		},
+		{
+			type: 'input',
+			message: 'Price:',
+			name: 'newProductPrice',
+			validate: (price) => {
+				let pass = price.match(/^\d*\.\d{2}$/); //checks if price is formatted as decimal number to 2 places
+				if (pass) {
+					return true;
+				}
+				return 'Please enter a valid price';
+			}
+		}
+	]).then( (input)=>{
+
+		connection.query('INSERT INTO products(product_name, department_name, price, quantity) VALUE (?,?,?,?)',
+			[input.newProduct, input.department, input.newProductQuantity, input.newProductPrice],
+			(err,res) =>{
+				if (err) throw err;
+
+				console.log( chalk.yellow('New Record inserted') );
+				connection.end();
+			});
+	});
 }
 
 
