@@ -124,22 +124,25 @@ function addToInventory(){
 			{
 				type: 'input',
 				message: 'Select quantity to add:',
-				name: 'quantityToAdd'
+				name: 'quantityToAdd',
+				validate: function (value) {
+					let pass = value.match(/^\d*$/); //checks if digit 
+					if (pass) {
+						return true;
+					}
+					return 'Please enter a valid number';
+				}
 			}
 		]).then( (product)=>{
 
-			if( !isNaN(product.quantityToAdd) ){
-				//add that amount to the product's inventory
-				connection.query('UPDATE products SET quantity=(quantity + ? ) WHERE product_name=?',[ parseInt(product.quantityToAdd), product.addTo], (err)=>{
-					if (err) throw err;
+			//add that amount to the product's inventory
+			connection.query('UPDATE products SET quantity=(quantity + ? ) WHERE product_name=?',[ product.quantityToAdd, product.addTo], (err,res)=>{
+				if (err) throw err;
 
-					console.log(chalk.yellow('Added to inventory:'),product.quantityToAdd, 'to', product.addTo);
-					connection.end();
-				});
-			} else{
-				console.log( chalk.red('Error: Did not submit a valid number'));
+				console.log(chalk.yellow('Added to inventory:'),product.quantityToAdd, 'to', product.addTo);
 				connection.end();
-			}
+			});
+
 		});
 			
 	});
@@ -165,7 +168,7 @@ function addToProduct(){
 			message: 'Quantity:',
 			name: 'newProductQuantity',
 			validate: function (value) {
-				let pass = value.match(/\b\d*\b/); //checks if digit 
+				let pass = value.match(/^\d*$/); //checks if digit 
 				if (pass) {
 					return true;
 				}

@@ -59,12 +59,19 @@ function selectQuantity(productSelection){
 			{
 				type: 'input',
 				message: 'Select quantity (inventory: ' + quantity + '):',
-				name: 'quantitySelection'
+				name: 'quantitySelection',
+				validate: function (value) {
+					let pass = value.match(/^\d*$/); //checks if digit 
+					if (pass) {
+						return true;
+					}
+					return 'Please enter a valid number';
+				}
 			}
 		]).then(function(input){
 
 			//if inventory is lower than user's desired amount, or not a numeric value, give error and close out
-			if(typeof input.quantitySelection !== 'number' || input.quantitySelection > quantity ){
+			if(input.quantitySelection > quantity ){
 				console.log( chalk.red('Error: Not a number or insufficient quantity!'));
 				connection.end();
 				return;
